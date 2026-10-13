@@ -290,6 +290,7 @@ Available sink types include:
 - `Void` — Sink Void documentation coming soon.
 - `MQTT` — Sink MQTT documentation coming soon.
 - `Kafka` — Sink Kafka documentation coming soon.
+- `TCP`: Listens on `PORT` (optional `BIND_ADDRESS`, default `0.0.0.0`) and writes each result buffer to the next connected client in round-robin order. Holds data back until `MIN_CONNECTIONS` (default 1) clients are connected.
 
 The `SET` clause specifies the output details.
 For a `File` sink, this includes the file path and the data format for the output.
