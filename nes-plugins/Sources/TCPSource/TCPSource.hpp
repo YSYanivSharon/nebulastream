@@ -139,6 +139,11 @@ struct ConfigParametersTCP
         "CONNECT_TIMEOUT_SECONDS",
         10,
         [](const std::unordered_map<std::string, std::string>& config) { return DescriptorConfig::tryGet(CONNECT_TIMEOUT, config); }};
+    /// Writes the logical source name and a newline to the server after connecting, so one server can feed several sources.
+    static inline const DescriptorConfig::ConfigParameter<bool> SEND_SOURCE_NAME{
+        "SEND_SOURCE_NAME",
+        false,
+        [](const std::unordered_map<std::string, std::string>& config) { return DescriptorConfig::tryGet(SEND_SOURCE_NAME, config); }};
 
     static inline std::unordered_map<std::string, DescriptorConfig::ConfigParameterContainer> parameterMap
         = DescriptorConfig::createConfigParameterContainerMap(
@@ -151,7 +156,8 @@ struct ConfigParametersTCP
             FLUSH_INTERVAL_MS,
             SOCKET_BUFFER_SIZE,
             SOCKET_BUFFER_TRANSFER_SIZE,
-            CONNECT_TIMEOUT);
+            CONNECT_TIMEOUT,
+            SEND_SOURCE_NAME);
 };
 
 class TCPSource : public Source
@@ -211,6 +217,7 @@ private:
     uint64_t generatedTuples{0};
     uint64_t generatedBuffers{0};
     u_int32_t connectionTimeout;
+    std::optional<std::string> sourceName;
 };
 
 }

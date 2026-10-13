@@ -217,7 +217,7 @@ Each logical source can have multiple physical sources, allowing a single stream
 
 Supported physical source types:
 - `File`
-- `TCP`
+- `TCP`: Connects to `SOCKET_HOST`:`SOCKET_PORT`. With `SEND_SOURCE_NAME` (default `false`) it first writes the logical source name and a newline, so one server can feed several sources.
 - `MQTT` — Source MQTT documentation coming soon.
 - `Generator` — Source Generator documentation coming soon.
 

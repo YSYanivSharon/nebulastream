@@ -58,6 +58,10 @@ TCPSource::TCPSource(const SourceDescriptor& sourceDescriptor)
     , flushIntervalInMs(sourceDescriptor.getFromConfig(ConfigParametersTCP::FLUSH_INTERVAL_MS))
     , connectionTimeout(sourceDescriptor.getFromConfig(ConfigParametersTCP::CONNECT_TIMEOUT))
 {
+    if (sourceDescriptor.getFromConfig(ConfigParametersTCP::SEND_SOURCE_NAME))
+    {
+        sourceName = std::string(sourceDescriptor.getLogicalSource().getLogicalSourceName().getOriginalString());
+    }
     NES_TRACE("Init TCPSource.");
 }
 
@@ -193,6 +197,26 @@ void TCPSource::open(std::shared_ptr<AbstractBufferProvider>)
 
     /// Set connection to non-blocking again to enable a timeout in the 'read()' call
     fcntl(sockfd, F_SETFL, flags); /// NOLINT(cppcoreguidelines-pro-type-vararg) - POSIX API requires varargs
+
+    if (sourceName)
+    {
+        const auto greeting = *sourceName + '\n';
+        for (size_t written = 0; written < greeting.size();)
+        {
+            const auto sent = ::send(sockfd, greeting.data() + written, greeting.size() - written, MSG_NOSIGNAL);
+            if (sent < 0)
+            {
+                if (errno == EINTR)
+                {
+                    continue;
+                }
+                const auto strerrorResult = strerror_r(errno, errBuffer.data(), errBuffer.size());
+                close();
+                throw CannotOpenSource("Could not send source name to {}:{}. {}", socketHost, socketPort, strerrorResult);
+            }
+            written += static_cast<size_t>(sent);
+        }
+    }
 
     NES_TRACE("TCPSource::open: Connected to server.");
 }
